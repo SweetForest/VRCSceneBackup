@@ -1,65 +1,101 @@
-# 🦙 Lazy VPM Package Template
+# VRC Scene Backup
 
-A simple VPM package template with **non-unity-structure** and GitHub Action workflows for managing releases: creating, updating, and testing.
+**Automatic scene backup before every VRChat build.**
 
-## ▶ Getting Started
+Have you ever had a power outage, a PC shutdown, or a crash in the middle of a build, and then your scene file was corrupted and everything you worked on was gone? Nothing left but thin air.
 
-1. **Generate Template**  
-   [![Use this template](.git_resources/button.png)](https://github.com/SweetForest/LazyVPMPackageTemplate/generate)
+This asset was born from the day that happened to me.
 
-2. **Set Workflow Permissions**  
-   After generating the repository, go to your repository's settings and enable workflows under `Settings > Actions > General`. Look at **Workflow permissions** and give **Read and write permissions.** 🔒
+Before every VRChat build, it saves a copy of your scene first. So if something goes wrong during the build, you still have the scene exactly as it was right before it started.
 
-3. **Upload Your Files**  
-   Replace the template files with your own project files. and push it on github. Make sure you still keep folder .github/workflows for automated release management. 📂
-   
-## 📦 Publishing a Release
+## Features
 
-The release process is managed through the `release.yml` file in the `/actions/workflows/` directory. The workflow offers three modes of operation: **Create**, **Update**, and **Test**. When triggering a workflow manually, you can choose one of these options:
+- Saves a backup automatically before every VRChat **Build & Test** and **Publish**
+- Separate folder for each platform (Windows, Android, iOS)
+- Timestamped file names, so older backups are never overwritten
+- Automatically deletes the oldest backups beyond a limit you choose
+- Never blocks or cancels your build, even if the backup fails
+- Does not touch the scene you have open (the backup is saved as a copy)
+- Backup Now button and menu items for manual backups
 
-- **Create**:  
-  This will create a public release. 🌍 Before releasing, it checks if the version you're about to release already exists. If it does, the release process will abort to avoid duplicates. ❌
+## Installation
 
-- **Update**:  
-  This mode will update the existing release version by uploading all new build files, while keeping the release notes intact. 🔄
+### Option 1: VRChat Creator Companion (recommended)
 
-- **Test**:  
-  This mode will create a **draft** release, allowing you to test the release process without making it public. 📝
+1. Open **https://sweetforest.github.io/VPM/** and click **Add to VCC**
+   (or copy the listing URL and add it manually in VCC under **Settings → Packages → Add Repository**)
+2. Open your project in VCC
+3. Find **VRC Scene Backup** in the package list and click **+** to add it
 
-Once you have set everything up, you can trigger the workflow from the **Actions** tab in your GitHub repository. Select the **release.yml** workflow, click the "Run workflow" button, and choose your desired release option (Create/Update/Test) from the dropdown. 🎉
+That's it. No setup is needed.
 
----
+### Option 2: Manual
 
-## 🛠️ Updating the VPM Workflow
+Download the `.zip` from the [Releases](../../releases) page and extract it into your project's `Packages` folder.
 
-If you haven't created your VPM yet, you can generate it from the following template: [VRChat Community Template Package Listing](https://github.com/vrchat-community/template-package-listing).
+## How it works
 
-To set up the workflow for updating the VPM:
+Every time you start a VRChat build, the active scene is saved as a copy before the build begins:
 
-1. **Generate Personal Access Token**:
-   - Go to [GitHub Personal Access Tokens](https://github.com/settings/tokens).
-   - Click on **"Generate new token"**.
-   - Select the necessary scopes (`workflow`).
-   - Copy the token after generating it.
+```
+Assets/
+└── Scene Backup/
+    ├── windows/
+    │   └── bak_MyWorld_2026-11-13_15-55-44.unity
+    ├── android/
+    │   └── bak_MyWorld_2026-11-13_16-20-10.unity
+    └── ios/
+```
 
-2. **Add the Token as a Secret**:
-   - In your repository, go to `Settings > Secrets and variables > Actions`.
-   - Click **"New repository secret"**.
-   - Name it (e.g., `REPO_ACCESS_TOKEN`) and paste the token.
-   - Click **"Add secret"**.
+File names follow the pattern `bak_<scene name>_<yyyy-MM-dd_HH-mm-ss>.unity`, saved inside a folder named after the build platform.
 
-3. **Configure Your Workflow**:
-   - Update your workflow YAML file located at `.github/workflows/build-listing.yml` to reference the secret and set up the necessary steps for triggering the workflow.
----
+### Restoring a scene
 
-### 📂 `.git_resources`
+1. Close or save your current scene
+2. Open the backup file from `Assets/Scene Backup/<platform>/`
+3. Use **File → Save As...** to save it back to your original scene path
 
-The `.git_resources` folder contains files like images for documentation purposes on GitHub (e.g., images used in the README file). These files will **not be included in the build process**.
+> Do not open a backup and your original scene at the same time.
 
-Similarly, the `README.md` file displayed on the main repository page serves as documentation only and will also **not be included in the build process**.
+## Settings
 
-## 💖 Support Me
+Open **Edit → Preferences → VRC Scene Backup** (or **Tools → VRC Scene Backup → Settings...**).
 
-Visit my booth for supporting me [SweetForest's Gumroad](https://sweetforest.gumroad.com/)
+| Setting | Description | Default |
+|---|---|---|
+| Backup before build | Turns the automatic backup on or off | On |
+| Backups to keep | How many backups to keep **per scene and per platform**. Older ones are deleted | 5 |
+| Backup folder | Where backups are stored (must be inside `Assets/`) | `Assets/Scene Backup` |
+| Log to Console | Prints a message when a backup is saved | On |
 
----
+## Menu
+
+**Tools → VRC Scene Backup**
+
+- **Enabled**: toggle automatic backups
+- **Backup Now**: save a backup of the active scene right away
+- **Open Backup Folder**: open the backup folder in the Project window
+- **Settings...**: open the preferences page
+
+## Notes
+
+- Scenes that have never been saved (Untitled) are skipped, because there is no file path to name the backup after.
+- Backups are stored inside `Assets/`, so Unity imports them. They are normal scene files.
+- If you use Git, add the backup folder to your `.gitignore` so backups are not committed:
+
+  ```
+  /Assets/Scene Backup/
+  /Assets/Scene Backup.meta
+  ```
+
+- A backup only covers the scene file. Assets and scripts outside the scene are not backed up, so keep using version control for those.
+
+## Requirements
+
+- Unity 2022.3 (the version used by the VRChat SDK)
+- VRChat SDK 3 (`com.vrchat.base`)
+
+## Links
+
+- Package listing: https://sweetforest.github.io/VPM/
+- Sweet Forest on Gumroad: https://sweetforest.gumroad.com/
