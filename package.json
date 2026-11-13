@@ -1,6 +1,6 @@
 {
   "name": "VRCSceneBackup",
-  "version": "0.1",
+  "version": "1.0",
   "displayName": "VRC Scene Backup",
   "description": "Backup scene in every build",
   "unity": "2022.3",
