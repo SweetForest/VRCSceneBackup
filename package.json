@@ -1,5 +1,5 @@
 {
-  "name": "sweetforest.VRCSceneBackup",
+  "name": "VRCSceneBackup",
   "version": "0.1",
   "displayName": "VRC Scene Backup",
   "description": "Backup scene in every build",
